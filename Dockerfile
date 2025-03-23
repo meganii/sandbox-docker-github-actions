@@ -5,20 +5,18 @@ RUN apt-get update && apt-get install -y \
     curl \
     wget \
     jq \
+    procps \
     && rm -rf /var/lib/apt/lists/*
 
 # Ollama用のディレクトリを作成
 RUN mkdir -p /root/.ollama
 
-# 一度サーバーを起動し、モデルをダウンロード（マルチステージビルド内でサーバーを実行）
-RUN nohup sh -c "ollama serve &" && \
-    sleep 5 && \
-    echo "Pulling gemma3:4b" && \
-    ollama pull gemma3:4b && \
-    sleep 2 && \
-    pkill ollama && \
-    sleep 2 && \
-    echo "Model successfully pulled and stored in /root/.ollama"
+# モデルをダウンロードするスクリプトを作成
+COPY download-model.sh /download-model.sh
+RUN chmod +x /download-model.sh
+
+# スクリプトを実行してモデルをダウンロード
+RUN /download-model.sh
 
 # 作業ディレクトリを指定
 WORKDIR /app
