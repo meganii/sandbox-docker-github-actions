@@ -13,8 +13,8 @@ RUN mkdir -p /root/.ollama
 # 一度サーバーを起動し、モデルをダウンロード（マルチステージビルド内でサーバーを実行）
 RUN nohup sh -c "ollama serve &" && \
     sleep 5 && \
-    echo "Pulling gemma:3-4b-it model..." && \
-    ollama pull gemma3:4 && \
+    echo "Pulling gemma3:4b" && \
+    ollama pull gemma3:4b && \
     sleep 2 && \
     pkill ollama && \
     sleep 2 && \
