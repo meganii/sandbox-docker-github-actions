@@ -1,0 +1,52 @@
+name: Ollama Gemma Action
+
+on:
+  workflow_dispatch:  # 手動実行可能
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  run-ollama:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build and run custom Ollama Docker container
+        run: |
+          # Dockerイメージをビルド
+          docker build -t ollama-gemma-action .
+          
+          # コンテナを実行（バックグラウンドで）
+          docker run -d -p 11434:11434 --name ollama-container ollama-gemma-action
+          
+          # コンテナが起動するまで待機
+          sleep 10
+          
+          # Ollama APIが利用可能か確認
+          echo "Checking if Ollama API is available:"
+          curl -s http://localhost:11434/api/tags || echo "Ollama API not available yet"
+          
+          # Gemma-3-4b-itモデルでクエリを実行
+          echo "Running query with Gemma-3-4b-it model:"
+          curl -s http://localhost:11434/api/generate -d '{
+            "model": "gemma:3-4b-it",
+            "prompt": "What are the key features of GitHub Actions?",
+            "stream": false
+          }' | jq '.response'
+          
+          # コンテナのログを表示
+          echo "Container logs:"
+          docker logs ollama-container
+      
+      - name: Cleanup
+        if: always()
+        run: |
+          docker stop ollama-container || true
+          docker rm ollama-container || true
