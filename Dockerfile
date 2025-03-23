@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Gemma-3-4b-itモデルをあらかじめpull
-RUN ollama pull gemma:3-4b-it
+RUN ollama pull gemma3:4b
 
 # Ollamaサーバーを起動するエントリポイントスクリプト
 COPY entrypoint.sh /entrypoint.sh
